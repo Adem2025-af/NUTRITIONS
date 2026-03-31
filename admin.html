@@ -108,17 +108,46 @@
         }
 
         async function publierProduit() {
-    const nom = document.getElementById('nom').value;
-    const prix = document.getElementById('prix').value;
-    const catId = document.getElementById('categorie').value;
-    const isPremium = document.getElementById('premium').checked;
-    
-    // --- CETTE PARTIE RÉCUPÈRE LE NOM DU FICHIER ---
-    const imageInput = document.getElementById('image');
-    let fileName = "";
-    if (imageInput.files.length > 0) {
-        fileName = imageInput.files[0].name; // Récupère "mutant-masse.jpg" par exemple
+    const file = document.getElementById('image').files[0];
+    if (!file) return alert("Veuillez sélectionner une image !");
+
+    const btn = document.getElementById('publishBtn');
+    btn.innerText = "ENVOI DE L'IMAGE...";
+    btn.disabled = true;
+
+    // 1. Générer un nom unique pour l'image
+    const fileName = `${Date.now()}-${file.name}`;
+
+    // 2. Envoyer le fichier réel dans le Storage Supabase
+    const { data: uploadData, error: uploadError } = await _supabase.storage
+        .from('produits')
+        .upload(fileName, file);
+
+    if (uploadError) {
+        alert("Erreur stockage : " + uploadError.message);
+        btn.disabled = false;
+        return;
     }
+
+    // 3. Récupérer l'URL publique (le lien internet de la photo)
+    const { data: urlData } = _supabase.storage.from('produits').getPublicUrl(fileName);
+    const publicUrl = urlData.publicUrl;
+
+    // 4. Enregistrer le produit avec ce lien dans la table 'produits'
+    const { error: dbError } = await _supabase.from('produits').insert([{
+        nom: document.getElementById('nom').value,
+        prix: document.getElementById('prix').value,
+        categorie_id: document.getElementById('categorie').value,
+        is_premium: document.getElementById('premium').checked,
+        image_url: publicUrl // C'est ce lien qui sera visible partout !
+    }]);
+
+    if (dbError) alert(dbError.message);
+    else {
+        alert("Produit publié avec succès pour tout le monde !");
+        location.reload();
+    }
+}
 
     if (!nom || !prix) return alert("Remplis le nom et le prix !");
 

@@ -26,44 +26,35 @@
     </div>
 
     <div id="admin-content" class="hidden w-full max-w-6xl p-6">
-        
         <div class="flex justify-between items-center mb-10 border-b border-white/10 pb-6">
             <h1 class="text-3xl font-black uppercase text-[#D4AF37]">Tableau de Bord</h1>
             <button onclick="handleLogout()" class="px-4 py-2 border border-red-500/50 text-red-500 rounded-lg hover:bg-red-500/10 transition-all">Déconnexion</button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
             <div class="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 gold-glow">
                 <h2 class="text-xl font-bold mb-6">Ajouter un produit</h2>
-                
                 <div class="space-y-4">
                     <div>
                         <label class="text-xs text-gray-400 uppercase font-bold">Nom du produit</label>
                         <input type="text" id="nom" placeholder="ex: Gold Standard Whey" class="w-full p-3 rounded-lg outline-none mt-1">
                     </div>
-
                     <div>
                         <label class="text-xs text-gray-400 uppercase font-bold">Prix (DZD)</label>
                         <input type="number" id="prix" placeholder="ex: 12500" class="w-full p-3 rounded-lg outline-none mt-1">
                     </div>
-
                     <div>
                         <label class="text-xs text-gray-400 uppercase font-bold">Catégorie</label>
-                        <select id="categorie" class="w-full p-3 rounded-lg outline-none mt-1">
-                            </select>
+                        <select id="categorie" class="w-full p-3 rounded-lg outline-none mt-1"></select>
                     </div>
-
                     <div class="flex items-center gap-2 py-2">
                         <input type="checkbox" id="premium" class="w-5 h-5">
                         <label for="premium" class="font-bold">Badge PREMIUM ⭐</label>
                     </div>
-
                     <div>
                         <label class="text-xs text-gray-400 uppercase font-bold">Image du produit</label>
                         <input type="file" id="image" accept="image/*" class="w-full p-2 mt-1 text-sm">
                     </div>
-
                     <button onclick="publierProduit()" id="publishBtn" class="w-full bg-white text-black font-black py-4 rounded-xl uppercase hover:bg-[#D4AF37] transition-all mt-4">
                         Publier sur le site
                     </button>
@@ -76,7 +67,6 @@
                     Chargement des produits...
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -85,6 +75,7 @@
         const SUPABASE_KEY = 'sb_publishable_qi3zHDI2bFk-EdYmmS_jkg_KJffbL3g';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // --- CONNEXION ---
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -100,163 +91,116 @@
                 btn.innerText = "SE CONNECTER";
                 btn.disabled = false;
             } else {
-                document.getElementById('login-card').classList.add('hidden');
-                document.getElementById('admin-content').classList.remove('hidden');
-                loadCategories(); 
-                loadProducts();
+                showAdminPanel();
             }
         }
 
+        function showAdminPanel() {
+            document.getElementById('login-card').classList.add('hidden');
+            document.getElementById('admin-content').classList.remove('hidden');
+            loadCategories(); 
+            loadProducts();
+        }
+
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            location.reload();
+        }
+
+        // --- CHARGER LES DONNÉES ---
+        async function loadCategories() {
+            const { data, error } = await _supabase.from('categorie').select('*');
+            if (!error) {
+                const select = document.getElementById('categorie');
+                select.innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+            }
+        }
+
+        async function loadProducts() {
+            const { data, error } = await _supabase.from('produits').select('*').order('created_at', { ascending: false });
+            const liste = document.getElementById('liste-produits');
+            
+            if (error) {
+                liste.innerHTML = "Erreur de chargement...";
+            } else {
+                liste.innerHTML = data.map(p => `
+                    <div class="flex items-center justify-between bg-black p-4 rounded-xl border border-white/5 mb-2">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center overflow-hidden">
+                                ${p.image_url ? `<img src="${p.image_url}" class="w-full h-full object-cover">` : '<span class="text-[8px]">NO IMG</span>'}
+                            </div>
+                            <div>
+                                <p class="font-bold text-sm text-white">${p.nom} ${p.is_premium ? '⭐' : ''}</p>
+                                <p class="text-xs text-[#D4AF37]">${p.prix} DZD</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs hover:underline bg-red-500/10 px-2 py-1 rounded">Supprimer</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // --- LA FONCTION PUBLIER (CORRIGÉE) ---
         async function publierProduit() {
-    const file = document.getElementById('image').files[0];
-    if (!file) return alert("Veuillez sélectionner une image !");
+            const file = document.getElementById('image').files[0];
+            const nom = document.getElementById('nom').value;
+            const prix = document.getElementById('prix').value;
+            const catId = document.getElementById('categorie').value;
+            const isPremium = document.getElementById('premium').checked;
 
-    const btn = document.getElementById('publishBtn');
-    btn.innerText = "ENVOI DE L'IMAGE...";
-    btn.disabled = true;
+            if (!nom || !prix || !file) return alert("Remplis le nom, le prix et choisis une image !");
 
-    // 1. Générer un nom unique pour l'image
-    const fileName = `${Date.now()}-${file.name}`;
+            const btn = document.getElementById('publishBtn');
+            btn.innerText = "PUBLICATION EN COURS...";
+            btn.disabled = true;
 
-    // 2. Envoyer le fichier réel dans le Storage Supabase
-    const { data: uploadData, error: uploadError } = await _supabase.storage
-        .from('produits')
-        .upload(fileName, file);
+            try {
+                // 1. Envoyer l'image au Storage (Bucket: IMAGES-PRODUITS)
+                const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
+                const { data: uploadData, error: uploadError } = await _supabase.storage
+                    .from('IMAGES-PRODUITS')
+                    .upload(fileName, file);
 
-    if (uploadError) {
-        alert("Erreur stockage : " + uploadError.message);
-        btn.disabled = false;
-        return;
-    }
+                if (uploadError) throw uploadError;
 
-    // 3. Récupérer l'URL publique (le lien internet de la photo)
-    const { data: urlData } = _supabase.storage.from('produits').getPublicUrl(fileName);
-    const publicUrl = urlData.publicUrl;
+                // 2. Récupérer l'URL
+                const { data: urlData } = _supabase.storage.from('IMAGES-PRODUITS').getPublicUrl(fileName);
+                const publicUrl = urlData.publicUrl;
 
-    // 4. Enregistrer le produit avec ce lien dans la table 'produits'
-    const { error: dbError } = await _supabase.from('produits').insert([{
-        nom: document.getElementById('nom').value,
-        prix: document.getElementById('prix').value,
-        categorie_id: document.getElementById('categorie').value,
-        is_premium: document.getElementById('premium').checked,
-        image_url: publicUrl // C'est ce lien qui sera visible partout !
-    }]);
+                // 3. Insérer en base de données
+                const { error: dbError } = await _supabase.from('produits').insert([{
+                    nom: nom,
+                    prix: prix,
+                    categorie_id: catId,
+                    is_premium: isPremium,
+                    image_url: publicUrl
+                }]);
 
-    if (dbError) alert(dbError.message);
-    else {
-        alert("Produit publié avec succès pour tout le monde !");
-        location.reload();
-    }
-}
+                if (dbError) throw dbError;
 
-    if (!nom || !prix) return alert("Remplis le nom et le prix !");
+                alert("Produit ajouté avec succès !");
+                location.reload();
 
-    const { error } = await _supabase.from('produits').insert([
-        { 
-            nom: nom, 
-            prix: prix, 
-            categorie_id: catId, 
-            is_premium: isPremium,
-            image_url: fileName // On envoie le nom du fichier ici
+            } catch (err) {
+                alert("Erreur : " + err.message);
+                btn.innerText = "Publier sur le site";
+                btn.disabled = false;
+            }
         }
-    ]);
-    
-    // ... reste du code (alert, reload)
-}
-// --- 1. CHARGER LES CATÉGORIES ---
-async function loadCategories() {
-    const { data, error } = await _supabase.from('categorie').select('*');
-    if (error) console.error("Erreur catégories:", error);
-    else {
-        const select = document.getElementById('categorie');
-        select.innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
-    }
-}
 
-// --- 2. CHARGER L'INVENTAIRE ---
-async function loadProducts() {
-    const { data, error } = await _supabase.from('produits').select('*').order('created_at', { ascending: false });
-    const liste = document.getElementById('liste-produits');
-    
-    if (error) {
-        liste.innerHTML = "Erreur de chargement...";
-    } else {
-        liste.innerHTML = data.map(p => `
-            <div class="flex items-center justify-between bg-black p-4 rounded-xl border border-white/5 mb-2">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center text-[10px] text-gray-500 overflow-hidden">
-                        ${p.image_url ? `<img src="${p.image_url}" class="w-full h-full object-cover">` : 'PAS d\'IMG'}
-                    </div>
-                    <div>
-                        <p class="font-bold text-sm text-white">${p.nom} ${p.is_premium ? '⭐' : ''}</p>
-                        <p class="text-xs text-[#D4AF37]">${p.prix} DZD</p>
-                    </div>
-                </div>
-                <button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs hover:underline bg-red-500/10 px-2 py-1 rounded">Supprimer</button>
-            </div>
-        `).join('');
-    }
-}
-
-// --- 3. PUBLIER UN PRODUIT ---
-async function publierProduit() {
-    const btn = document.getElementById('publishBtn');
-    const nom = document.getElementById('nom').value;
-    const prix = document.getElementById('prix').value;
-    const catId = document.getElementById('categorie').value;
-    const isPremium = document.getElementById('premium').checked;
-    const imageFile = document.getElementById('image').files[0];
-
-    if (!nom || !prix) return alert("Veuillez remplir le nom et le prix !");
-    
-    btn.innerText = "PUBLICATION...";
-    btn.disabled = true;
-
-    let imageUrl = "";
-
-    // Si une image est sélectionnée, on peut l'uploader (Optionnel selon ta config Supabase Storage)
-    // Pour l'instant, on insère les données texte
-    const { error } = await _supabase.from('produits').insert([
-        { 
-            nom: nom, 
-            prix: prix, 
-            categorie_id: catId, 
-            is_premium: isPremium,
-            image_url: imageUrl 
+        async function deleteProduct(id) {
+            if(confirm("Supprimer ce produit ?")) {
+                const { error } = await _supabase.from('produits').delete().eq('id', id);
+                if (error) alert(error.message);
+                else loadProducts();
+            }
         }
-    ]);
 
-    if (error) {
-        alert("Erreur : " + error.message);
-        btn.innerText = "Publier sur le site";
-        btn.disabled = false;
-    } else {
-        alert("Produit ajouté avec succès !");
-        location.reload();
-    }
-}
-
-// --- 4. SUPPRIMER UN PRODUIT ---
-async function deleteProduct(id) {
-    if(confirm("Voulez-vous vraiment supprimer ce produit ?")) {
-        const { error } = await _supabase.from('produits').delete().eq('id', id);
-        if (error) alert(error.message);
-        else loadProducts();
-    }
-}
-
-// --- 5. VÉRIFICATION AUTOMATIQUE AU CHARGEMENT ---
-document.addEventListener('DOMContentLoaded', async () => {
-    const { data } = await _supabase.auth.getSession();
-    if (data.session) {
-        document.getElementById('login-card').classList.add('hidden');
-        document.getElementById('admin-content').classList.remove('hidden');
-        loadCategories();
-        loadProducts();
-    }
-});
-        // --- REMETS ICI TES FONCTIONS loadCategories(), loadProducts() et publierProduit() ---
-        // (Garde le reste de ton script tel qu'il était avant pour que la base de données fonctionne)
+        // Vérifier session
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data } = await _supabase.auth.getSession();
+            if (data.session) showAdminPanel();
+        });
     </script>
 </body>
 </html>

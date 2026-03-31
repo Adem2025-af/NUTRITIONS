@@ -57,7 +57,6 @@
         const SUPABASE_KEY = 'sb_publishable_qi3zHDI2bFk-EdYmmS_jkg_KJffbL3g';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- AUTHENTIFICATION ---
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -74,7 +73,6 @@
 
         async function handleLogout() { await _supabase.auth.signOut(); location.reload(); }
 
-        // --- CHARGEMENT ---
         async function loadCategories() {
             const { data } = await _supabase.from('categorie').select('*');
             if (data) document.getElementById('categorie').innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
@@ -100,38 +98,37 @@
             `).join('');
         }
 
-        // --- PUBLICATION (CORRIGÉE AVEC LE BON NOM DE BUCKET) ---
         async function publierProduit() {
             const file = document.getElementById('image').files[0];
             const nom = document.getElementById('nom').value;
             const prix = document.getElementById('prix').value;
-            const bucketName = 'IMAGES-PRODUITS'; // <--- NOM EXACT DE TA CAPTURE SUPABASE
+            const bucketName = 'IMAGES-PRODUITS'; // <--- CORRECTION DU NOM ICI
 
-            if (!file || !nom || !prix) return alert("Remplis tout !");
+            if (!file || !nom || !prix) return alert("Remplis tous les champs !");
 
             const btn = document.getElementById('publishBtn');
             btn.innerText = "PUBLICATION..."; btn.disabled = true;
 
             try {
-                // 1. Upload
                 const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-                const { data: upData, error: upErr } = await _supabase.storage.from(bucketName).upload(fileName, file);
+                // UPLOAD
+                const { error: upErr } = await _supabase.storage.from(bucketName).upload(fileName, file);
                 if (upErr) throw upErr;
 
-                // 2. URL
+                // URL
                 const { data: urlData } = _supabase.storage.from(bucketName).getPublicUrl(fileName);
                 const publicUrl = urlData.publicUrl;
 
-                // 3. Database
+                // INSERTION BDD
                 const { error: dbErr } = await _supabase.from('produits').insert([{
-                    nom: nom, prix: prix,
+                    nom, prix, 
                     categorie_id: document.getElementById('categorie').value,
                     is_premium: document.getElementById('premium').checked,
                     image_url: publicUrl
                 }]);
                 if (dbErr) throw dbErr;
 
-                alert("Succès !"); location.reload();
+                alert("Produit ajouté !"); location.reload();
             } catch (err) {
                 alert("Erreur: " + err.message);
                 btn.innerText = "Publier"; btn.disabled = false;

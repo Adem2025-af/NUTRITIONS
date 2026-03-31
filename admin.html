@@ -107,10 +107,33 @@
             }
         }
 
-        async function handleLogout() {
-            await _supabase.auth.signOut();
-            location.reload();
+        async function publierProduit() {
+    const nom = document.getElementById('nom').value;
+    const prix = document.getElementById('prix').value;
+    const catId = document.getElementById('categorie').value;
+    const isPremium = document.getElementById('premium').checked;
+    
+    // --- CETTE PARTIE RÉCUPÈRE LE NOM DU FICHIER ---
+    const imageInput = document.getElementById('image');
+    let fileName = "";
+    if (imageInput.files.length > 0) {
+        fileName = imageInput.files[0].name; // Récupère "mutant-masse.jpg" par exemple
+    }
+
+    if (!nom || !prix) return alert("Remplis le nom et le prix !");
+
+    const { error } = await _supabase.from('produits').insert([
+        { 
+            nom: nom, 
+            prix: prix, 
+            categorie_id: catId, 
+            is_premium: isPremium,
+            image_url: fileName // On envoie le nom du fichier ici
         }
+    ]);
+    
+    // ... reste du code (alert, reload)
+}
 // --- 1. CHARGER LES CATÉGORIES ---
 async function loadCategories() {
     const { data, error } = await _supabase.from('categorie').select('*');

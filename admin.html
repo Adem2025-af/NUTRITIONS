@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Elite Admin | Connexion</title>
+    <title>Elite Admin | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -17,55 +17,37 @@
     <div id="login-card" class="w-full max-w-md bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 gold-glow">
         <h1 class="text-3xl font-black text-center mb-8 uppercase tracking-tighter">Elite <span class="text-[#D4AF37]">Admin</span></h1>
         <div class="space-y-4">
-            <input type="email" id="email" placeholder="Email" class="w-full p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all">
-            <input type="password" id="password" placeholder="Mot de passe" class="w-full p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all">
-            <button onclick="handleLogin()" id="loginBtn" class="w-full bg-[#D4AF37] text-black font-black py-4 rounded-xl uppercase tracking-widest hover:brightness-110 transition-all">
-                Se connecter
-            </button>
+            <input type="email" id="email" placeholder="Email" class="w-full p-4 rounded-xl outline-none focus:border-[#D4AF37]">
+            <input type="password" id="password" placeholder="Mot de passe" class="w-full p-4 rounded-xl outline-none focus:border-[#D4AF37]">
+            <button onclick="handleLogin()" id="loginBtn" class="w-full bg-[#D4AF37] text-black font-black py-4 rounded-xl uppercase hover:brightness-110">Se connecter</button>
         </div>
     </div>
 
     <div id="admin-content" class="hidden w-full max-w-6xl p-6">
         <div class="flex justify-between items-center mb-10 border-b border-white/10 pb-6">
             <h1 class="text-3xl font-black uppercase text-[#D4AF37]">Tableau de Bord</h1>
-            <button onclick="handleLogout()" class="px-4 py-2 border border-red-500/50 text-red-500 rounded-lg hover:bg-red-500/10 transition-all">Déconnexion</button>
+            <button onclick="handleLogout()" class="px-4 py-2 border border-red-500/50 text-red-500 rounded-lg hover:bg-red-500/10">Déconnexion</button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 gold-glow">
                 <h2 class="text-xl font-bold mb-6">Ajouter un produit</h2>
                 <div class="space-y-4">
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Nom du produit</label>
-                        <input type="text" id="nom" placeholder="ex: Gold Standard Whey" class="w-full p-3 rounded-lg outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Prix (DZD)</label>
-                        <input type="number" id="prix" placeholder="ex: 12500" class="w-full p-3 rounded-lg outline-none mt-1">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Catégorie</label>
-                        <select id="categorie" class="w-full p-3 rounded-lg outline-none mt-1"></select>
-                    </div>
-                    <div class="flex items-center gap-2 py-2">
+                    <input type="text" id="nom" placeholder="Nom du produit" class="w-full p-3 rounded-lg outline-none">
+                    <input type="number" id="prix" placeholder="Prix (DZD)" class="w-full p-3 rounded-lg outline-none">
+                    <select id="categorie" class="w-full p-3 rounded-lg outline-none"></select>
+                    <div class="flex items-center gap-2">
                         <input type="checkbox" id="premium" class="w-5 h-5">
                         <label for="premium" class="font-bold">Badge PREMIUM ⭐</label>
                     </div>
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Image du produit</label>
-                        <input type="file" id="image" accept="image/*" class="w-full p-2 mt-1 text-sm">
-                    </div>
-                    <button onclick="publierProduit()" id="publishBtn" class="w-full bg-white text-black font-black py-4 rounded-xl uppercase hover:bg-[#D4AF37] transition-all mt-4">
-                        Publier sur le site
-                    </button>
+                    <input type="file" id="image" accept="image/*" class="w-full p-2 text-sm">
+                    <button onclick="publierProduit()" id="publishBtn" class="w-full bg-white text-black font-black py-4 rounded-xl uppercase hover:bg-[#D4AF37]">Publier</button>
                 </div>
             </div>
 
             <div class="md:col-span-2">
-                <h2 class="text-xl font-bold mb-6">Inventaire Actuel</h2>
-                <div id="liste-produits" class="space-y-4 text-gray-400">
-                    Chargement des produits...
-                </div>
+                <h2 class="text-xl font-bold mb-6">Inventaire</h2>
+                <div id="liste-produits" class="space-y-4 text-gray-400">Chargement...</div>
             </div>
         </div>
     </div>
@@ -75,131 +57,97 @@
         const SUPABASE_KEY = 'sb_publishable_qi3zHDI2bFk-EdYmmS_jkg_KJffbL3g';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- CONNEXION ---
+        // --- AUTHENTIFICATION ---
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const btn = document.getElementById('loginBtn');
-
-            btn.innerText = "VÉRIFICATION...";
-            btn.disabled = true;
-
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-
-            if (error) {
-                alert("Accès refusé : " + error.message);
-                btn.innerText = "SE CONNECTER";
-                btn.disabled = false;
-            } else {
-                showAdminPanel();
-            }
+            if (error) alert("Erreur: " + error.message);
+            else showAdmin();
         }
 
-        function showAdminPanel() {
+        function showAdmin() {
             document.getElementById('login-card').classList.add('hidden');
             document.getElementById('admin-content').classList.remove('hidden');
-            loadCategories(); 
-            loadProducts();
+            loadCategories(); loadProducts();
         }
 
-        async function handleLogout() {
-            await _supabase.auth.signOut();
-            location.reload();
-        }
+        async function handleLogout() { await _supabase.auth.signOut(); location.reload(); }
 
-        // --- CHARGER LES DONNÉES ---
+        // --- CHARGEMENT ---
         async function loadCategories() {
-            const { data, error } = await _supabase.from('categorie').select('*');
-            if (!error) {
-                const select = document.getElementById('categorie');
-                select.innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
-            }
+            const { data } = await _supabase.from('categorie').select('*');
+            if (data) document.getElementById('categorie').innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
         }
 
         async function loadProducts() {
             const { data, error } = await _supabase.from('produits').select('*').order('created_at', { ascending: false });
             const liste = document.getElementById('liste-produits');
-            
-            if (error) {
-                liste.innerHTML = "Erreur de chargement...";
-            } else {
-                liste.innerHTML = data.map(p => `
-                    <div class="flex items-center justify-between bg-black p-4 rounded-xl border border-white/5 mb-2">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center overflow-hidden">
-                                ${p.image_url ? `<img src="${p.image_url}" class="w-full h-full object-cover">` : '<span class="text-[8px]">NO IMG</span>'}
-                            </div>
-                            <div>
-                                <p class="font-bold text-sm text-white">${p.nom} ${p.is_premium ? '⭐' : ''}</p>
-                                <p class="text-xs text-[#D4AF37]">${p.prix} DZD</p>
-                            </div>
+            if (error) { liste.innerHTML = "Erreur de chargement"; return; }
+            liste.innerHTML = data.map(p => `
+                <div class="flex items-center justify-between bg-black p-4 rounded-xl border border-white/5 mb-2">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center">
+                            ${p.image_url ? `<img src="${p.image_url}" class="w-full h-full object-cover">` : '<span class="text-[8px]">NO IMG</span>'}
                         </div>
-                        <button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs hover:underline bg-red-500/10 px-2 py-1 rounded">Supprimer</button>
+                        <div>
+                            <p class="font-bold text-sm text-white">${p.nom} ${p.is_premium ? '⭐' : ''}</p>
+                            <p class="text-xs text-[#D4AF37]">${p.prix} DZD</p>
+                        </div>
                     </div>
-                `).join('');
-            }
+                    <button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs px-2 py-1 bg-red-500/10 rounded">Supprimer</button>
+                </div>
+            `).join('');
         }
 
-        // --- LA FONCTION PUBLIER (CORRIGÉE) ---
+        // --- PUBLICATION (CORRIGÉE AVEC LE BON NOM DE BUCKET) ---
         async function publierProduit() {
             const file = document.getElementById('image').files[0];
             const nom = document.getElementById('nom').value;
             const prix = document.getElementById('prix').value;
-            const catId = document.getElementById('categorie').value;
-            const isPremium = document.getElementById('premium').checked;
+            const bucketName = 'IMAGES-PRODUITS'; // <--- NOM EXACT DE TA CAPTURE SUPABASE
 
-            if (!nom || !prix || !file) return alert("Remplis le nom, le prix et choisis une image !");
+            if (!file || !nom || !prix) return alert("Remplis tout !");
 
             const btn = document.getElementById('publishBtn');
-            btn.innerText = "PUBLICATION EN COURS...";
-            btn.disabled = true;
+            btn.innerText = "PUBLICATION..."; btn.disabled = true;
 
             try {
-                // 1. Envoyer l'image au Storage (Bucket: IMAGES-PRODUITS)
+                // 1. Upload
                 const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-                const { data: uploadData, error: uploadError } = await _supabase.storage
-                    .from('IMAGES-PRODUITS')
-                    .upload(fileName, file);
+                const { data: upData, error: upErr } = await _supabase.storage.from(bucketName).upload(fileName, file);
+                if (upErr) throw upErr;
 
-                if (uploadError) throw uploadError;
-
-                // 2. Récupérer l'URL
-                const { data: urlData } = _supabase.storage.from('IMAGES-PRODUITS').getPublicUrl(fileName);
+                // 2. URL
+                const { data: urlData } = _supabase.storage.from(bucketName).getPublicUrl(fileName);
                 const publicUrl = urlData.publicUrl;
 
-                // 3. Insérer en base de données
-                const { error: dbError } = await _supabase.from('produits').insert([{
-                    nom: nom,
-                    prix: prix,
-                    categorie_id: catId,
-                    is_premium: isPremium,
+                // 3. Database
+                const { error: dbErr } = await _supabase.from('produits').insert([{
+                    nom: nom, prix: prix,
+                    categorie_id: document.getElementById('categorie').value,
+                    is_premium: document.getElementById('premium').checked,
                     image_url: publicUrl
                 }]);
+                if (dbErr) throw dbErr;
 
-                if (dbError) throw dbError;
-
-                alert("Produit ajouté avec succès !");
-                location.reload();
-
+                alert("Succès !"); location.reload();
             } catch (err) {
-                alert("Erreur : " + err.message);
-                btn.innerText = "Publier sur le site";
-                btn.disabled = false;
+                alert("Erreur: " + err.message);
+                btn.innerText = "Publier"; btn.disabled = false;
             }
         }
 
         async function deleteProduct(id) {
-            if(confirm("Supprimer ce produit ?")) {
-                const { error } = await _supabase.from('produits').delete().eq('id', id);
-                if (error) alert(error.message);
-                else loadProducts();
+            if(confirm("Supprimer ?")) {
+                await _supabase.from('produits').delete().eq('id', id);
+                loadProducts();
             }
         }
 
-        // Vérifier session
         document.addEventListener('DOMContentLoaded', async () => {
             const { data } = await _supabase.auth.getSession();
-            if (data.session) showAdminPanel();
+            if (data.session) showAdmin();
         });
     </script>
 </body>

@@ -24,11 +24,27 @@
         </div>
     </div>
 
-    <div id="admin-content" class="hidden w-full max-w-6xl animate-fade-in">
-        <div class="flex justify-between items-center mb-10 border-b border-white/10 pb-6">
-            <h1 class="text-3xl font-black uppercase">Tableau de <span class="text-[#D4AF37]">Bord</span></h1>
-            <button onclick="handleLogout()" class="px-4 py-2 text-xs border border-red-500/30 text-red-500 rounded-lg hover:bg-red-500/10">Déconnexion</button>
+   <div id="admin-content" class="hidden w-full max-w-6xl p-6">
+    
+    <div class="flex justify-between items-center mb-10 border-b border-white/10 pb-6">
+        <h1 class="text-3xl font-black uppercase">Tableau de <span class="text-[#D4AF37]">Bord</span></h1>
+        <button onclick="handleLogout()" class="...">Déconnexion</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <div class="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5">
+            <h2 class="text-xl font-bold mb-4">Ajouter un produit</h2>
+            </div>
+
+        <div class="md:col-span-2">
+            <h2 class="text-xl font-bold mb-4">Inventaire Actuel</h2>
+            <div id="liste-produits" class="space-y-4">
+                </div>
         </div>
+
+    </div>
+</div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
              </div>

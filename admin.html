@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Elite Admin | Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Admin | Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -10,6 +11,7 @@
         .gold-glow { box-shadow: 0 0 30px rgba(212, 175, 55, 0.1); }
         .hidden { display: none !important; }
         input, select { background: #000 !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
+        input:focus { border-color: #D4AF37 !important; outline: none; }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -17,9 +19,9 @@
     <div id="login-card" class="w-full max-w-md bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 gold-glow">
         <h1 class="text-3xl font-black text-center mb-8 uppercase tracking-tighter">Elite <span class="text-[#D4AF37]">Admin</span></h1>
         <div class="space-y-4">
-            <input type="email" id="email" placeholder="Email" class="w-full p-4 rounded-xl outline-none focus:border-[#D4AF37]">
-            <input type="password" id="password" placeholder="Mot de passe" class="w-full p-4 rounded-xl outline-none focus:border-[#D4AF37]">
-            <button onclick="handleLogin()" id="loginBtn" class="w-full bg-[#D4AF37] text-black font-black py-4 rounded-xl uppercase hover:brightness-110">Se connecter</button>
+            <input type="email" id="email" placeholder="Email" class="w-full p-4 rounded-xl">
+            <input type="password" id="password" placeholder="Mot de passe" class="w-full p-4 rounded-xl">
+            <button onclick="handleLogin()" id="loginBtn" class="w-full bg-[#D4AF37] text-black font-black py-4 rounded-xl uppercase hover:brightness-110 transition-all">Se connecter</button>
         </div>
     </div>
 
@@ -30,24 +32,36 @@
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 gold-glow">
+            <div class="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 gold-glow h-fit">
                 <h2 class="text-xl font-bold mb-6">Ajouter un produit</h2>
                 <div class="space-y-4">
-                    <input type="text" id="nom" placeholder="Nom du produit" class="w-full p-3 rounded-lg outline-none">
-                    <input type="number" id="prix" placeholder="Prix (DZD)" class="w-full p-3 rounded-lg outline-none">
-                    <select id="categorie" class="w-full p-3 rounded-lg outline-none"></select>
-                    <div class="flex items-center gap-2">
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold">Nom</label>
+                        <input type="text" id="nom" class="w-full p-3 rounded-lg mt-1" placeholder="ex: Whey Protein">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold">Prix (DZD)</label>
+                        <input type="number" id="prix" class="w-full p-3 rounded-lg mt-1" placeholder="ex: 12000">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold">Catégorie</label>
+                        <select id="categorie" class="w-full p-3 rounded-lg mt-1"></select>
+                    </div>
+                    <div class="flex items-center gap-2 py-2">
                         <input type="checkbox" id="premium" class="w-5 h-5">
                         <label for="premium" class="font-bold">Badge PREMIUM ⭐</label>
                     </div>
-                    <input type="file" id="image" accept="image/*" class="w-full p-2 text-sm">
-                    <button onclick="publierProduit()" id="publishBtn" class="w-full bg-white text-black font-black py-4 rounded-xl uppercase hover:bg-[#D4AF37]">Publier</button>
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold">Image</label>
+                        <input type="file" id="image" accept="image/*" class="w-full p-2 mt-1 text-sm">
+                    </div>
+                    <button onclick="publierProduit()" id="publishBtn" class="w-full bg-white text-black font-black py-4 rounded-xl uppercase hover:bg-[#D4AF37] transition-all mt-4">Publier sur le site</button>
                 </div>
             </div>
 
             <div class="md:col-span-2">
-                <h2 class="text-xl font-bold mb-6">Inventaire</h2>
-                <div id="liste-produits" class="space-y-4 text-gray-400">Chargement...</div>
+                <h2 class="text-xl font-bold mb-6">Inventaire Actuel</h2>
+                <div id="liste-produits" class="space-y-4 text-gray-400 text-center py-10">Chargement...</div>
             </div>
         </div>
     </div>
@@ -57,91 +71,125 @@
         const SUPABASE_KEY = 'sb_publishable_qi3zHDI2bFk-EdYmmS_jkg_KJffbL3g';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // --- AUTH ---
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const btn = document.getElementById('loginBtn');
+            btn.innerText = "VÉRIFICATION...";
+            btn.disabled = true;
+
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-            if (error) alert("Erreur: " + error.message);
-            else showAdmin();
+            if (error) {
+                alert("Erreur : " + error.message);
+                btn.innerText = "Se connecter";
+                btn.disabled = false;
+            } else {
+                showAdmin();
+            }
         }
 
         function showAdmin() {
             document.getElementById('login-card').classList.add('hidden');
             document.getElementById('admin-content').classList.remove('hidden');
-            loadCategories(); loadProducts();
+            loadCategories();
+            loadProducts();
         }
 
-        async function handleLogout() { await _supabase.auth.signOut(); location.reload(); }
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            location.reload();
+        }
 
+        // --- DATA LOAD ---
         async function loadCategories() {
             const { data } = await _supabase.from('categorie').select('*');
-            if (data) document.getElementById('categorie').innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+            if (data) {
+                document.getElementById('categorie').innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+            }
         }
 
         async function loadProducts() {
             const { data, error } = await _supabase.from('produits').select('*').order('created_at', { ascending: false });
             const liste = document.getElementById('liste-produits');
-            if (error) { liste.innerHTML = "Erreur de chargement"; return; }
+            if (error) {
+                liste.innerHTML = "Erreur de chargement des produits.";
+                return;
+            }
+            if (data.length === 0) {
+                liste.innerHTML = "Aucun produit en ligne.";
+                return;
+            }
             liste.innerHTML = data.map(p => `
-                <div class="flex items-center justify-between bg-black p-4 rounded-xl border border-white/5 mb-2">
+                <div class="flex items-center justify-between bg-[#0a0a0a] p-4 rounded-xl border border-white/5 mb-2">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center">
-                            ${p.image_url ? `<img src="${p.image_url}" class="w-full h-full object-cover">` : '<span class="text-[8px]">NO IMG</span>'}
+                        <div class="w-14 h-14 bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center border border-white/5">
+                            ${p.image_url ? `<img src="${p.image_url}" class="w-full h-full object-cover">` : '<span class="text-[8px]">IMAGE</span>'}
                         </div>
                         <div>
-                            <p class="font-bold text-sm text-white">${p.nom} ${p.is_premium ? '⭐' : ''}</p>
+                            <p class="font-bold text-white">${p.nom} ${p.is_premium ? '⭐' : ''}</p>
                             <p class="text-xs text-[#D4AF37]">${p.prix} DZD</p>
                         </div>
                     </div>
-                    <button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs px-2 py-1 bg-red-500/10 rounded">Supprimer</button>
+                    <button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs px-3 py-2 bg-red-500/10 rounded-lg hover:bg-red-500/20 transition-all">Supprimer</button>
                 </div>
             `).join('');
         }
 
+        // --- PUBLICATION ---
         async function publierProduit() {
             const file = document.getElementById('image').files[0];
             const nom = document.getElementById('nom').value;
             const prix = document.getElementById('prix').value;
-            const bucketName = 'IMAGES-PRODUITS'; // <--- CORRECTION DU NOM ICI
+            const catId = document.getElementById('categorie').value;
+            const isPremium = document.getElementById('premium').checked;
+            const bucketName = 'IMAGES-PRODUITS';
 
-            if (!file || !nom || !prix) return alert("Remplis tous les champs !");
+            if (!file || !nom || !prix) return alert("Veuillez remplir tous les champs et choisir une image !");
 
             const btn = document.getElementById('publishBtn');
-            btn.innerText = "PUBLICATION..."; btn.disabled = true;
+            btn.innerText = "ENVOI EN COURS...";
+            btn.disabled = true;
 
             try {
+                // 1. Upload Image
                 const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-                // UPLOAD
-                const { error: upErr } = await _supabase.storage.from(bucketName).upload(fileName, file);
+                const { data: upData, error: upErr } = await _supabase.storage.from(bucketName).upload(fileName, file);
                 if (upErr) throw upErr;
 
-                // URL
+                // 2. Get URL
                 const { data: urlData } = _supabase.storage.from(bucketName).getPublicUrl(fileName);
                 const publicUrl = urlData.publicUrl;
 
-                // INSERTION BDD
+                // 3. Database Insert
                 const { error: dbErr } = await _supabase.from('produits').insert([{
-                    nom, prix, 
-                    categorie_id: document.getElementById('categorie').value,
-                    is_premium: document.getElementById('premium').checked,
+                    nom: nom,
+                    prix: prix,
+                    categorie_id: catId,
+                    is_premium: isPremium,
                     image_url: publicUrl
                 }]);
                 if (dbErr) throw dbErr;
 
-                alert("Produit ajouté !"); location.reload();
+                alert("Produit ajouté avec succès !");
+                location.reload();
+
             } catch (err) {
-                alert("Erreur: " + err.message);
-                btn.innerText = "Publier"; btn.disabled = false;
+                alert("Erreur système : " + err.message);
+                btn.innerText = "Publier sur le site";
+                btn.disabled = false;
             }
         }
 
         async function deleteProduct(id) {
-            if(confirm("Supprimer ?")) {
-                await _supabase.from('produits').delete().eq('id', id);
-                loadProducts();
+            if (confirm("Voulez-vous supprimer ce produit ?")) {
+                const { error } = await _supabase.from('produits').delete().eq('id', id);
+                if (error) alert(error.message);
+                else loadProducts();
             }
         }
 
+        // --- SESSION CHECK ---
         document.addEventListener('DOMContentLoaded', async () => {
             const { data } = await _supabase.auth.getSession();
             if (data.session) showAdmin();

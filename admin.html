@@ -9,6 +9,7 @@
         body { background: #050505; color: white; font-family: 'Inter', sans-serif; }
         .gold-glow { box-shadow: 0 0 30px rgba(212, 175, 55, 0.1); }
         .hidden { display: none !important; }
+        input, select { background: #000 !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -16,38 +17,67 @@
     <div id="login-card" class="w-full max-w-md bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 gold-glow">
         <h1 class="text-3xl font-black text-center mb-8 uppercase tracking-tighter">Elite <span class="text-[#D4AF37]">Admin</span></h1>
         <div class="space-y-4">
-            <input type="email" id="email" placeholder="Email" class="w-full p-4 rounded-xl bg-black border border-white/10 outline-none focus:border-[#D4AF37] transition-all">
-            <input type="password" id="password" placeholder="Mot de passe" class="w-full p-4 rounded-xl bg-black border border-white/10 outline-none focus:border-[#D4AF37] transition-all">
+            <input type="email" id="email" placeholder="Email" class="w-full p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all">
+            <input type="password" id="password" placeholder="Mot de passe" class="w-full p-4 rounded-xl outline-none focus:border-[#D4AF37] transition-all">
             <button onclick="handleLogin()" id="loginBtn" class="w-full bg-[#D4AF37] text-black font-black py-4 rounded-xl uppercase tracking-widest hover:brightness-110 transition-all">
                 Se connecter
             </button>
         </div>
     </div>
 
-   <div id="admin-content" class="hidden w-full max-w-6xl p-6">
-    
-    <div class="flex justify-between items-center mb-10 border-b border-white/10 pb-6">
-        <h1 class="text-3xl font-black uppercase">Tableau de <span class="text-[#D4AF37]">Bord</span></h1>
-        <button onclick="handleLogout()" class="...">Déconnexion</button>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div id="admin-content" class="hidden w-full max-w-6xl p-6">
         
-        <div class="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5">
-            <h2 class="text-xl font-bold mb-4">Ajouter un produit</h2>
-            </div>
-
-        <div class="md:col-span-2">
-            <h2 class="text-xl font-bold mb-4">Inventaire Actuel</h2>
-            <div id="liste-produits" class="space-y-4">
-                </div>
+        <div class="flex justify-between items-center mb-10 border-b border-white/10 pb-6">
+            <h1 class="text-3xl font-black uppercase text-[#D4AF37]">Tableau de Bord</h1>
+            <button onclick="handleLogout()" class="px-4 py-2 border border-red-500/50 text-red-500 rounded-lg hover:bg-red-500/10 transition-all">Déconnexion</button>
         </div>
 
-    </div>
-</div>
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-             </div>
+            
+            <div class="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 gold-glow">
+                <h2 class="text-xl font-bold mb-6">Ajouter un produit</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold">Nom du produit</label>
+                        <input type="text" id="nom" placeholder="ex: Gold Standard Whey" class="w-full p-3 rounded-lg outline-none mt-1">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold">Prix (DZD)</label>
+                        <input type="number" id="prix" placeholder="ex: 12500" class="w-full p-3 rounded-lg outline-none mt-1">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold">Catégorie</label>
+                        <select id="categorie" class="w-full p-3 rounded-lg outline-none mt-1">
+                            </select>
+                    </div>
+
+                    <div class="flex items-center gap-2 py-2">
+                        <input type="checkbox" id="premium" class="w-5 h-5">
+                        <label for="premium" class="font-bold">Badge PREMIUM ⭐</label>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold">Image du produit</label>
+                        <input type="file" id="image" accept="image/*" class="w-full p-2 mt-1 text-sm">
+                    </div>
+
+                    <button onclick="publierProduit()" id="publishBtn" class="w-full bg-white text-black font-black py-4 rounded-xl uppercase hover:bg-[#D4AF37] transition-all mt-4">
+                        Publier sur le site
+                    </button>
+                </div>
+            </div>
+
+            <div class="md:col-span-2">
+                <h2 class="text-xl font-bold mb-6">Inventaire Actuel</h2>
+                <div id="liste-produits" class="space-y-4 text-gray-400">
+                    Chargement des produits...
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <script>
@@ -72,33 +102,109 @@
             } else {
                 document.getElementById('login-card').classList.add('hidden');
                 document.getElementById('admin-content').classList.remove('hidden');
-                loadCategories(); // Tes anciennes fonctions
-                loadProducts();   // Tes anciennes fonctions
+                loadCategories(); 
+                loadProducts();
             }
         }
 
-      async function handleLogin() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const btn = document.getElementById('loginBtn');
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            location.reload();
+        }
+// --- 1. CHARGER LES CATÉGORIES ---
+async function loadCategories() {
+    const { data, error } = await _supabase.from('categorie').select('*');
+    if (error) console.error("Erreur catégories:", error);
+    else {
+        const select = document.getElementById('categorie');
+        select.innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+    }
+}
 
-    btn.innerText = "VÉRIFICATION...";
+// --- 2. CHARGER L'INVENTAIRE ---
+async function loadProducts() {
+    const { data, error } = await _supabase.from('produits').select('*').order('created_at', { ascending: false });
+    const liste = document.getElementById('liste-produits');
+    
+    if (error) {
+        liste.innerHTML = "Erreur de chargement...";
+    } else {
+        liste.innerHTML = data.map(p => `
+            <div class="flex items-center justify-between bg-black p-4 rounded-xl border border-white/5 mb-2">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center text-[10px] text-gray-500 overflow-hidden">
+                        ${p.image_url ? `<img src="${p.image_url}" class="w-full h-full object-cover">` : 'PAS d\'IMG'}
+                    </div>
+                    <div>
+                        <p class="font-bold text-sm text-white">${p.nom} ${p.is_premium ? '⭐' : ''}</p>
+                        <p class="text-xs text-[#D4AF37]">${p.prix} DZD</p>
+                    </div>
+                </div>
+                <button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs hover:underline bg-red-500/10 px-2 py-1 rounded">Supprimer</button>
+            </div>
+        `).join('');
+    }
+}
 
-    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+// --- 3. PUBLIER UN PRODUIT ---
+async function publierProduit() {
+    const btn = document.getElementById('publishBtn');
+    const nom = document.getElementById('nom').value;
+    const prix = document.getElementById('prix').value;
+    const catId = document.getElementById('categorie').value;
+    const isPremium = document.getElementById('premium').checked;
+    const imageFile = document.getElementById('image').files[0];
+
+    if (!nom || !prix) return alert("Veuillez remplir le nom et le prix !");
+    
+    btn.innerText = "PUBLICATION...";
+    btn.disabled = true;
+
+    let imageUrl = "";
+
+    // Si une image est sélectionnée, on peut l'uploader (Optionnel selon ta config Supabase Storage)
+    // Pour l'instant, on insère les données texte
+    const { error } = await _supabase.from('produits').insert([
+        { 
+            nom: nom, 
+            prix: prix, 
+            categorie_id: catId, 
+            is_premium: isPremium,
+            image_url: imageUrl 
+        }
+    ]);
 
     if (error) {
         alert("Erreur : " + error.message);
-        btn.innerText = "SE CONNECTER";
+        btn.innerText = "Publier sur le site";
+        btn.disabled = false;
     } else {
-        // --- C'EST CETTE PARTIE QUI MANQUE SÛREMENT ---
-        document.getElementById('login-card').classList.add('hidden'); // On cache le login
-        document.getElementById('admin-content').classList.remove('hidden'); // On montre l'admin
-        
-        // On lance le chargement des données
-        loadCategories(); 
-        loadProducts();
+        alert("Produit ajouté avec succès !");
+        location.reload();
     }
 }
+
+// --- 4. SUPPRIMER UN PRODUIT ---
+async function deleteProduct(id) {
+    if(confirm("Voulez-vous vraiment supprimer ce produit ?")) {
+        const { error } = await _supabase.from('produits').delete().eq('id', id);
+        if (error) alert(error.message);
+        else loadProducts();
+    }
+}
+
+// --- 5. VÉRIFICATION AUTOMATIQUE AU CHARGEMENT ---
+document.addEventListener('DOMContentLoaded', async () => {
+    const { data } = await _supabase.auth.getSession();
+    if (data.session) {
+        document.getElementById('login-card').classList.add('hidden');
+        document.getElementById('admin-content').classList.remove('hidden');
+        loadCategories();
+        loadProducts();
+    }
+});
+        // --- REMETS ICI TES FONCTIONS loadCategories(), loadProducts() et publierProduit() ---
+        // (Garde le reste de ton script tel qu'il était avant pour que la base de données fonctionne)
     </script>
 </body>
 </html>

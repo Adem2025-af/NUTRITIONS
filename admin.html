@@ -2,198 +2,147 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Admin | Panel</title>
+    <title>Elite Admin | Full Reset</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #050505; color: white; font-family: 'Inter', sans-serif; }
-        .gold-glow { box-shadow: 0 0 30px rgba(212, 175, 55, 0.1); }
+        body { background: #050505; color: white; font-family: sans-serif; }
+        .gold { color: #D4AF37; }
+        .btn-gold { background: #D4AF37; color: black; font-weight: bold; }
         .hidden { display: none !important; }
-        input, select { background: #000 !important; border: 1px solid rgba(255,255,255,0.1) !important; color: white !important; }
-        input:focus { border-color: #D4AF37 !important; outline: none; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="p-8">
 
-    <div id="login-card" class="w-full max-w-md bg-[#0a0a0a] p-8 rounded-3xl border border-white/5 gold-glow">
-        <h1 class="text-3xl font-black text-center mb-8 uppercase tracking-tighter">Elite <span class="text-[#D4AF37]">Admin</span></h1>
-        <div class="space-y-4">
-            <input type="email" id="email" placeholder="Email" class="w-full p-4 rounded-xl">
-            <input type="password" id="password" placeholder="Mot de passe" class="w-full p-4 rounded-xl">
-            <button onclick="handleLogin()" id="loginBtn" class="w-full bg-[#D4AF37] text-black font-black py-4 rounded-xl uppercase hover:brightness-110 transition-all">Se connecter</button>
-        </div>
+    <div id="login-zone" class="max-w-md mx-auto mt-20 bg-[#0a0a0a] p-8 rounded-3xl border border-white/10">
+        <h1 class="text-2xl font-bold text-center mb-6 uppercase">Elite <span class="gold">Admin</span></h1>
+        <input type="email" id="email" placeholder="Email" class="w-full p-3 mb-4 bg-black border border-white/10 rounded-xl">
+        <input type="password" id="pass" placeholder="Mot de passe" class="w-full p-3 mb-6 bg-black border border-white/10 rounded-xl">
+        <button onclick="login()" class="w-full btn-gold py-3 rounded-xl">CONNEXION</button>
     </div>
 
-    <div id="admin-content" class="hidden w-full max-w-6xl p-6">
-        <div class="flex justify-between items-center mb-10 border-b border-white/10 pb-6">
-            <h1 class="text-3xl font-black uppercase text-[#D4AF37]">Tableau de Bord</h1>
-            <button onclick="handleLogout()" class="px-4 py-2 border border-red-500/50 text-red-500 rounded-lg hover:bg-red-500/10">Déconnexion</button>
+    <div id="admin-zone" class="hidden max-w-5xl mx-auto">
+        <div class="flex justify-between items-center mb-10">
+            <h1 class="text-3xl font-black gold uppercase italic">Dashboard</h1>
+            <button onclick="logout()" class="text-red-500 text-sm">Déconnexion</button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="bg-[#0a0a0a] p-6 rounded-2xl border border-white/5 gold-glow h-fit">
-                <h2 class="text-xl font-bold mb-6">Ajouter un produit</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div class="bg-[#0a0a0a] p-6 rounded-3xl border border-white/5">
+                <h2 class="text-xl font-bold mb-6 italic">AJOUTER UN PRODUIT</h2>
                 <div class="space-y-4">
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Nom</label>
-                        <input type="text" id="nom" class="w-full p-3 rounded-lg mt-1" placeholder="ex: Whey Protein">
+                    <input type="text" id="p_nom" placeholder="Nom du produit" class="w-full p-3 bg-black border border-white/10 rounded-lg">
+                    <input type="number" id="p_prix" placeholder="Prix (DZD)" class="w-full p-3 bg-black border border-white/10 rounded-lg">
+                    <select id="p_cat" class="w-full p-3 bg-black border border-white/10 rounded-lg"></select>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="p_premium" class="w-5 h-5">
+                        <label>Badge PREMIUM ⭐</label>
                     </div>
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Prix (DZD)</label>
-                        <input type="number" id="prix" class="w-full p-3 rounded-lg mt-1" placeholder="ex: 12000">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Catégorie</label>
-                        <select id="categorie" class="w-full p-3 rounded-lg mt-1"></select>
-                    </div>
-                    <div class="flex items-center gap-2 py-2">
-                        <input type="checkbox" id="premium" class="w-5 h-5">
-                        <label for="premium" class="font-bold">Badge PREMIUM ⭐</label>
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase font-bold">Image</label>
-                        <input type="file" id="image" accept="image/*" class="w-full p-2 mt-1 text-sm">
-                    </div>
-                    <button onclick="publierProduit()" id="publishBtn" class="w-full bg-white text-black font-black py-4 rounded-xl uppercase hover:bg-[#D4AF37] transition-all mt-4">Publier sur le site</button>
+                    <input type="file" id="p_file" class="text-sm">
+                    <button onclick="upload()" id="btnPub" class="w-full btn-gold py-4 rounded-xl mt-4">PUBLIER</button>
                 </div>
             </div>
 
-            <div class="md:col-span-2">
-                <h2 class="text-xl font-bold mb-6">Inventaire Actuel</h2>
-                <div id="liste-produits" class="space-y-4 text-gray-400 text-center py-10">Chargement...</div>
+            <div>
+                <h2 class="text-xl font-bold mb-6 italic">INVENTAIRE</h2>
+                <div id="p_liste" class="space-y-4"></div>
             </div>
         </div>
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://aowscxkvlrlenzjhisec.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_qi3zHDI2bFk-EdYmmS_jkg_KJffbL3g';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // --- CONFIGURATION MISE À JOUR ---
+        const S_URL = 'https://aowscxkvlrlenzjhisec.supabase.co';
+        const S_KEY = 'sb_publishable_DJTUfgRZvgWmp3qIFStrIA_gJ6yi-U-';
+        const _supa = supabase.createClient(S_URL, S_KEY);
 
-        // --- AUTH ---
-        async function handleLogin() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const btn = document.getElementById('loginBtn');
-            btn.innerText = "VÉRIFICATION...";
-            btn.disabled = true;
+        async function login() {
+            const { error } = await _supa.auth.signInWithPassword({
+                email: document.getElementById('email').value,
+                password: document.getElementById('pass').value
+            });
+            if (error) alert("Erreur : " + error.message); else checkUser();
+        }
 
-            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                alert("Erreur : " + error.message);
-                btn.innerText = "Se connecter";
-                btn.disabled = false;
-            } else {
-                showAdmin();
+        async function checkUser() {
+            const { data } = await _supa.auth.getSession();
+            if (data.session) {
+                document.getElementById('login-zone').classList.add('hidden');
+                document.getElementById('admin-zone').classList.remove('hidden');
+                loadData();
             }
         }
 
-        function showAdmin() {
-            document.getElementById('login-card').classList.add('hidden');
-            document.getElementById('admin-content').classList.remove('hidden');
-            loadCategories();
-            loadProducts();
-        }
+        async function logout() { await _supa.auth.signOut(); location.reload(); }
 
-        async function handleLogout() {
-            await _supabase.auth.signOut();
-            location.reload();
-        }
-
-        // --- DATA LOAD ---
-        async function loadCategories() {
-            const { data } = await _supabase.from('categorie').select('*');
-            if (data) {
-                document.getElementById('categorie').innerHTML = data.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
-            }
-        }
-
-        async function loadProducts() {
-            const { data, error } = await _supabase.from('produits').select('*').order('created_at', { ascending: false });
-            const liste = document.getElementById('liste-produits');
-            if (error) {
-                liste.innerHTML = "Erreur de chargement des produits.";
-                return;
-            }
-            if (data.length === 0) {
-                liste.innerHTML = "Aucun produit en ligne.";
-                return;
-            }
-            liste.innerHTML = data.map(p => `
-                <div class="flex items-center justify-between bg-[#0a0a0a] p-4 rounded-xl border border-white/5 mb-2">
-                    <div class="flex items-center gap-4">
-                        <div class="w-14 h-14 bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center border border-white/5">
-                            ${p.image_url ? `<img src="${p.image_url}" class="w-full h-full object-cover">` : '<span class="text-[8px]">IMAGE</span>'}
+        async function loadData() {
+            // Charger catégories
+            const { data: cats } = await _supa.from('categorie').select('*');
+            if(cats) document.getElementById('p_cat').innerHTML = cats.map(c => `<option value="${c.id}">${c.nom}</option>`).join('');
+            
+            // Charger produits
+            const { data: prods } = await _supa.from('produits').select('*').order('created_at', {ascending: false});
+            if(prods) {
+                document.getElementById('p_liste').innerHTML = prods.map(p => `
+                    <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5">
+                        <div class="flex items-center gap-4">
+                            <img src="${p.image_url}" class="w-12 h-12 object-cover rounded-lg border border-white/10">
+                            <div>
+                                <p class="font-bold text-sm">${p.nom} ${p.is_premium ? '⭐' : ''}</p>
+                                <p class="text-xs gold">${p.prix} DZD</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="font-bold text-white">${p.nom} ${p.is_premium ? '⭐' : ''}</p>
-                            <p class="text-xs text-[#D4AF37]">${p.prix} DZD</p>
-                        </div>
+                        <button onclick="del(${p.id})" class="text-red-500 text-xs bg-red-500/10 px-3 py-1 rounded-lg">Supprimer</button>
                     </div>
-                    <button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs px-3 py-2 bg-red-500/10 rounded-lg hover:bg-red-500/20 transition-all">Supprimer</button>
-                </div>
-            `).join('');
+                `).join('');
+            }
         }
 
-        // --- PUBLICATION ---
-        async function publierProduit() {
-            const file = document.getElementById('image').files[0];
-            const nom = document.getElementById('nom').value;
-            const prix = document.getElementById('prix').value;
-            const catId = document.getElementById('categorie').value;
-            const isPremium = document.getElementById('premium').checked;
-            const bucketName = 'IMAGES-PRODUITS';
-
-            if (!file || !nom || !prix) return alert("Veuillez remplir tous les champs et choisir une image !");
-
-            const btn = document.getElementById('publishBtn');
-            btn.innerText = "ENVOI EN COURS...";
-            btn.disabled = true;
+        async function upload() {
+            const fileInput = document.getElementById('p_file');
+            const file = fileInput.files[0];
+            const btn = document.getElementById('btnPub');
+            
+            if (!file) return alert("Choisis une image !");
+            
+            btn.innerText = "CHARGEMENT..."; btn.disabled = true;
 
             try {
                 // 1. Upload Image
-                const fileName = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-                const { data: upData, error: upErr } = await _supabase.storage.from(bucketName).upload(fileName, file);
+                const fName = `${Date.now()}_${file.name.replace(/\s/g, '_')}`;
+                const { error: upErr } = await _supa.storage.from('IMAGES-PRODUITS').upload(fName, file);
                 if (upErr) throw upErr;
 
-                // 2. Get URL
-                const { data: urlData } = _supabase.storage.from(bucketName).getPublicUrl(fileName);
-                const publicUrl = urlData.publicUrl;
+                // 2. Lien Public
+                const { data: urlData } = _supa.storage.from('IMAGES-PRODUITS').getPublicUrl(fName);
 
-                // 3. Database Insert
-                const { error: dbErr } = await _supabase.from('produits').insert([{
-                    nom: nom,
-                    prix: prix,
-                    categorie_id: catId,
-                    is_premium: isPremium,
-                    image_url: publicUrl
+                // 3. Insert BDD
+                const { error: dbErr } = await _supa.from('produits').insert([{
+                    nom: document.getElementById('p_nom').value,
+                    prix: document.getElementById('p_prix').value,
+                    categorie_id: document.getElementById('p_cat').value,
+                    is_premium: document.getElementById('p_premium').checked,
+                    image_url: urlData.publicUrl
                 }]);
                 if (dbErr) throw dbErr;
 
                 alert("Produit ajouté avec succès !");
-                location.reload();
+                fileInput.value = ""; // Reset file input
+                loadData();
+            } catch (e) { 
+                alert("Erreur système : " + e.message); 
+            }
+            btn.innerText = "PUBLIER"; btn.disabled = false;
+        }
 
-            } catch (err) {
-                alert("Erreur système : " + err.message);
-                btn.innerText = "Publier sur le site";
-                btn.disabled = false;
+        async function del(id) {
+            if(confirm("Voulez-vous vraiment supprimer ce produit ?")) {
+                const { error } = await _supa.from('produits').delete().eq('id', id);
+                if (error) alert(error.message); else loadData();
             }
         }
 
-        async function deleteProduct(id) {
-            if (confirm("Voulez-vous supprimer ce produit ?")) {
-                const { error } = await _supabase.from('produits').delete().eq('id', id);
-                if (error) alert(error.message);
-                else loadProducts();
-            }
-        }
-
-        // --- SESSION CHECK ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            const { data } = await _supabase.auth.getSession();
-            if (data.session) showAdmin();
-        });
+        window.onload = checkUser;
     </script>
 </body>
 </html>

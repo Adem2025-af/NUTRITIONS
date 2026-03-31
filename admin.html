@@ -61,10 +61,28 @@
             }
         }
 
-        async function handleLogout() {
-            await _supabase.auth.signOut();
-            location.reload();
-        }
+      async function handleLogin() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('loginBtn');
+
+    btn.innerText = "VÉRIFICATION...";
+
+    const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        alert("Erreur : " + error.message);
+        btn.innerText = "SE CONNECTER";
+    } else {
+        // --- C'EST CETTE PARTIE QUI MANQUE SÛREMENT ---
+        document.getElementById('login-card').classList.add('hidden'); // On cache le login
+        document.getElementById('admin-content').classList.remove('hidden'); // On montre l'admin
+        
+        // On lance le chargement des données
+        loadCategories(); 
+        loadProducts();
+    }
+}
     </script>
 </body>
 </html>

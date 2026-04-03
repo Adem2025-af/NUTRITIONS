@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Nutrition | Elite Performance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    <style>
+        :root { --gold: #D4AF37; --dark-bg: #020202; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--dark-bg); color: white; overflow-x: hidden; }
+        .font-title { font-family: 'Montserrat', sans-serif; font-weight: 900; }
+        .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.05); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .glass-card:hover { border: 1px solid var(--gold); transform: translateY(-10px); box-shadow: 0 20px 40px rgba(212, 175, 55, 0.08); }
+        .gold-text { color: var(--gold); }
+        .gold-bg { background-color: var(--gold); }
+        .gold-glow { box-shadow: 0 0 30px rgba(212, 175, 55, 0.15); }
+        #main-catalog { display: none; opacity: 0; transform: translateY(50px); }
+        .premium-badge { background: linear-gradient(90deg, #B8860B, #D4AF37); color: black; font-weight: 900; }
+        .particle { position: fixed; pointer-events: none; background: var(--gold); border-radius: 50%; z-index: 9999; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 10px; }
+        .nav-hidden { opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .nav-visible { opacity: 1 !important; visibility: visible !important; }
+        .elite-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; outline: none; transition: all 0.3s; }
+        .elite-input:focus { border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
+    </style>
+</head>
+<body>
+
+    <nav id="main-nav" class="nav-hidden fixed top-0 w-full z-50 px-8 py-6 bg-black/90 backdrop-blur-xl border-b border-white/5">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold font-title tracking-tighter">ELITE<span class="gold-text">NUTRITION</span></h1>
+            <button id="cart-toggle" onclick="toggleCart()" class="relative p-3 rounded-full border border-white/10 hover:border-gold transition-all">
+                <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                <span id="cart-badge" class="absolute -top-1 -right-1 bg-gold text-black text-[10px] rounded-full w-5 h-5 flex items-center justify-center font-black hidden">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <section id="hero" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-black/80 to-black z-10"></div>
+            <img src="fond-nutrition.jpg" class="w-full h-full object-cover opacity-30 scale-110" alt="Background" onerror="this.src='https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop'">
+        </div>
+        <div class="relative z-20 text-center px-6">
+            <div class="inline-block px-4 py-1 border border-gold/50 rounded-full mb-6" data-aos="fade-down">
+                <span class="gold-text text-sm font-bold tracking-[0.3em] uppercase">Tizi Ouzou • Algeria</span>
+            </div>
+            <h1 class="text-7xl md:text-9xl font-black mb-8 tracking-tighter uppercase font-title" data-aos="zoom-out" data-aos-delay="200">
+                ELITE<br><span class="gold-text">PERFORMANCE</span>
+            </h1>
+            <button onclick="revealCatalog()" class="group relative px-12 py-6 bg-gold text-black font-black text-xl rounded-full overflow-hidden transition-all hover:scale-105 gold-glow">
+                <span class="relative z-10 uppercase">Entrer dans l'Elite</span>
+                <div class="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+            </button>
+        </div>
+    </section>
+
+    <main id="main-catalog" class="py-24 px-8 max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
+            <div data-aos="fade-right">
+                <h2 class="text-5xl font-black font-title uppercase mb-4">La <span class="gold-text">Sélection</span></h2>
+                <p class="opacity-50 text-sm tracking-widest uppercase font-bold">Optimisez vos résultats immédiatement.</p>
+            </div>
+            <div id="categories" class="flex flex-wrap gap-3">
+                <button onclick="setCategory('creatine')" class="cat-btn active px-6 py-3 rounded-full border border-gold bg-gold text-black font-bold transition-all uppercase text-xs">Créatine</button>
+                <button onclick="setCategory('whey')" class="cat-btn px-6 py-3 rounded-full border border-white/10 hover:border-gold transition-all uppercase text-xs">Whey</button>
+                <button onclick="setCategory('gainer')" class="cat-btn px-6 py-3 rounded-full border border-white/10 hover:border-gold transition-all uppercase text-xs">Gainer</button>
+                <button onclick="setCategory('prework')" class="cat-btn px-6 py-3 rounded-full border border-white/10 hover:border-gold transition-all uppercase text-xs">Boosters</button>
+                <button onclick="setCategory('multi')" class="cat-btn px-6 py-3 rounded-full border border-white/10 hover:border-gold transition-all uppercase text-xs">Vitamines</button>
+                <button onclick="setCategory('access')" class="cat-btn px-6 py-3 rounded-full border border-white/10 hover:border-gold transition-all uppercase text-xs">Accessoires</button>
+            </div>
+        </div>
+        <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
+    </main>
+
+    <div class="fixed inset-0 z-[100] hidden flex justify-end" id="cart-modal">
+        <div class="absolute inset-0 bg-black/95 backdrop-blur-md" onclick="toggleCart()"></div>
+        <div class="relative w-full max-w-md bg-[#050505] h-screen p-8 border-l border-white/10 flex flex-col shadow-2xl">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-black font-title uppercase">Panier</h2>
+                <button onclick="toggleCart()" class="p-2 hover:text-gold transition-colors"><i data-lucide="x" class="w-8 h-8"></i></button>
+            </div>
+            <div id="modal-cart-items" class="flex-1 overflow-y-auto space-y-4 pr-2 mb-6"></div>
+            <div class="space-y-3 mb-6 pt-4 border-t border-white/5">
+                <p class="text-[10px] gold-text font-black uppercase tracking-widest">Informations de livraison</p>
+                <input type="text" id="client-name" placeholder="Votre nom complet" class="elite-input w-full px-4 py-3 rounded-xl text-sm">
+                <textarea id="client-address" placeholder="Adresse complète (Ville, Quartier...)" rows="2" class="elite-input w-full px-4 py-3 rounded-xl text-sm resize-none"></textarea>
+            </div>
+            <div class="pt-6 border-t border-white/10">
+                <div class="flex justify-between text-2xl font-black mb-6 uppercase">
+                    <span>Total</span>
+                    <span id="modal-total" class="gold-text">0 DZD</span>
+                </div>
+                <button onclick="sendOrder()" class="block w-full gold-bg text-black font-black py-5 rounded-xl text-center uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all">
+                    Confirmer sur WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // --- DONNÉES LOCALES (Basées sur tes images) ---
+        const allProducts = [
+            // CREATINE
+            { id: 1, nom: "Creatine Optimum Nutrition", prix: 6500, image: "creatine-on.jpg", premium: true, categorie: { slug: 'creatine' } },
+            { id: 2, nom: "Creatine CellTech Elite", prix: 8500, image: "creatine celltech.jpg", premium: true, categorie: { slug: 'creatine' } },
+            { id: 3, nom: "Creatine Biotech USA", prix: 5800, image: "biotech-creatine.jpg", premium: false, categorie: { slug: 'creatine' } },
+            
+            // WHEY
+            { id: 4, nom: "Iso Whey Zero", prix: 14500, image: "iso-whey-zero.jpg", premium: true, categorie: { slug: 'whey' } },
+            { id: 5, nom: "Whey Gold Standard", prix: 13800, image: "whey gold-standard.jpg", premium: true, categorie: { slug: 'whey' } },
+            { id: 6, nom: "Dymatize ISO 100", prix: 15500, image: "Why dymatize-iso100.jpg", premium: true, categorie: { slug: 'whey' } },
+            
+            // GAINER
+            { id: 7, nom: "Mass Tech Performance", prix: 11000, image: "mass-tech.jpg", premium: true, categorie: { slug: 'gainer' } },
+            { id: 8, nom: "Serious Mass ON", prix: 10500, image: "serious-mass.jpg", premium: false, categorie: { slug: 'gainer' } },
+            
+            // BOOSTERS
+            { id: 9, nom: "C4 Original Pre-Workout", prix: 7500, image: "preworkouwtc4-original.jpg", premium: false, categorie: { slug: 'prework' } },
+            { id: 10, nom: "Psychotic Insane Labz", prix: 8200, image: "prew psychotic.jpg", premium: true, categorie: { slug: 'prework' } },
+            { id: 11, nom: "The Curse", prix: 6900, image: "prew the-curse.jpg", premium: false, categorie: { slug: 'prework' } },
+            
+            // VITAMINES
+            { id: 12, nom: "Alpha Men Multi-Vitamin", prix: 4500, image: "multivitamine alpha-men.jpg", premium: false, categorie: { slug: 'multi' } }
+        ];
+
+        let cart = JSON.parse(localStorage.getItem('elite_cart')) || [];
+
+        function loadProductsFromSupabase() {
+            renderProducts('creatine');
+        }
+
+        function renderProducts(categorySlug = 'creatine') {
+            const grid = document.getElementById('products-grid');
+            const filtered = allProducts.filter(p => p.categorie.slug === categorySlug);
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-20 opacity-30 italic">Bientôt disponible...</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="glass-card p-6 rounded-[2rem] relative group" data-aos="fade-up">
+                    <div class="aspect-square mb-6 overflow-hidden rounded-2xl bg-black/20 flex items-center justify-center">
+                        <img src="${p.image}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" 
+                             onerror="this.src='https://via.placeholder.com/400x400/111/D4AF37?text=ELITE'">
+                    </div>
+                    ${p.premium ? '<span class="absolute top-8 left-8 premium-badge px-3 py-1 rounded-full text-[10px]">PREMIUM</span>' : ''}
+                    <p class="gold-text text-xs font-black mb-1 uppercase tracking-widest">Elite Edition</p>
+                    <h3 class="text-xl font-bold mb-4 h-14 overflow-hidden leading-tight">${p.nom}</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-2xl font-black">${p.prix.toLocaleString()} <span class="text-xs">DZD</span></span>
+                        <button onclick="addToCart(event, ${p.id})" class="w-12 h-12 gold-bg text-black rounded-full flex items-center justify-center hover:scale-110 active:scale-90 transition-all shadow-lg">
+                            <i data-lucide="plus"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function revealCatalog() {
+            const catalog = document.getElementById('main-catalog');
+            catalog.style.display = 'block';
+            gsap.to(window, {duration: 1.2, scrollTo: "#main-catalog", ease: "power2.inOut"});
+            gsap.to(catalog, {opacity: 1, y: 0, duration: 1, ease: "power4.out"});
+        }
+
+        function setCategory(cat) {
+            gsap.to("#products-grid", {opacity: 0, y: 20, duration: 0.3, onComplete: () => {
+                renderProducts(cat);
+                gsap.to("#products-grid", {opacity: 1, y: 0, duration: 0.3});
+            }});
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('bg-gold', 'text-black', 'border-gold');
+                btn.classList.add('border-white/10');
+                if(btn.getAttribute('onclick').includes(cat)) {
+                    btn.classList.add('bg-gold', 'text-black', 'border-gold');
+                    btn.classList.remove('border-white/10');
+                }
+            });
+        }
+
+        function addToCart(event, id) {
+            createParticles(event.clientX, event.clientY);
+            const product = allProducts.find(p => p.id === id);
+            const existing = cart.find(item => item.id === id);
+            if (existing) existing.qty += 1;
+            else cart.push({...product, name: product.nom, img: product.image, qty: 1});
+            saveCart();
+            updateBadge();
+            gsap.fromTo("#cart-toggle", {scale: 1}, {scale: 1.3, duration: 0.2, yoyo: true, repeat: 1});
+        }
+
+        function renderCartModal() {
+            const container = document.getElementById('modal-cart-items');
+            const totalEl = document.getElementById('modal-total');
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="text-center py-20 opacity-20 italic text-sm">Votre panier est vide</div>';
+                totalEl.textContent = '0 DZD';
+                return;
+            }
+            container.innerHTML = cart.map(item => `
+                <div class="flex items-center gap-4 p-4 border border-white/5 rounded-2xl bg-white/5">
+                    <img src="${item.img}" class="w-16 h-16 object-contain rounded-lg bg-black/40">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-[10px] uppercase leading-tight">${item.name}</h4>
+                        <p class="gold-text font-black text-xs mt-1">${item.prix.toLocaleString()} DZD</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-2">
+                        <button onclick="removeFromCart(${item.id})" class="text-white/20 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <div class="flex items-center gap-3 bg-black px-2 py-1 rounded-full border border-white/10">
+                            <button onclick="changeQty(${item.id}, -1)" class="opacity-50 hover:opacity-100 text-xs">-</button>
+                            <span class="font-bold text-xs">${item.qty}</span>
+                            <button onclick="changeQty(${item.id}, 1)" class="opacity-50 hover:opacity-100 text-xs">+</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            const total = cart.reduce((sum, item) => sum + (item.prix * item.qty), 0);
+            totalEl.textContent = total.toLocaleString() + ' DZD';
+            lucide.createIcons();
+        }
+
+        function changeQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if(item) {
+                item.qty += delta;
+                if(item.qty <= 0) cart = cart.filter(i => i.id !== id);
+                saveCart();
+                updateBadge();
+                renderCartModal();
+            }
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(i => i.id !== id);
+            saveCart();
+            updateBadge();
+            renderCartModal();
+        }
+
+        function saveCart() { localStorage.setItem('elite_cart', JSON.stringify(cart)); }
+        
+        function updateBadge() {
+            const badge = document.getElementById('cart-badge');
+            const count = cart.reduce((sum, item) => sum + item.qty, 0);
+            badge.textContent = count;
+            badge.classList.toggle('hidden', count === 0);
+        }
+
+        function toggleCart() {
+            const modal = document.getElementById('cart-modal');
+            if(modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                renderCartModal();
+                gsap.fromTo(modal.querySelector('.relative'), {x: 400}, {x: 0, duration: 0.5});
+            } else {
+                gsap.to(modal.querySelector('.relative'), {x: 400, duration: 0.4, onComplete: () => modal.classList.add('hidden')});
+            }
+        }
+
+        function sendOrder() {
+            const name = document.getElementById('client-name').value.trim();
+            const address = document.getElementById('client-address').value.trim();
+            if(!name || !address || cart.length === 0) return alert("Veuillez remplir vos infos !");
+            
+            const total = cart.reduce((sum, item) => sum + (item.prix * item.qty), 0);
+            const lines = cart.map(i => `• ${i.name} (x${i.qty})`).join('%0A');
+            const message = `*ELITE NUTRITION - COMMANDE*%0A%0A👤 *Client :* ${name}%0A📍 *Adresse :* ${address}%0A%0A📦 *Articles :*%0A${lines}%0A%0A💰 *TOTAL : ${total.toLocaleString()} DZD*`;
+            window.open(`https://wa.me/213775778062?text=${message}`, '_blank');
+        }
+
+        function createParticles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.width = '4px'; p.style.height = '4px';
+                p.style.left = x + 'px'; p.style.top = y + 'px';
+                document.body.appendChild(p);
+                const angle = Math.random() * Math.PI * 2;
+                const v = Math.random() * 100 + 50;
+                gsap.to(p, { x: Math.cos(angle) * v, y: Math.sin(angle) * v, opacity: 0, duration: 0.8, onComplete: () => p.remove() });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            AOS.init({ once: true });
+            lucide.createIcons();
+            updateBadge();
+            loadProductsFromSupabase();
+            window.addEventListener('scroll', () => {
+                const nav = document.getElementById('main-nav');
+                nav.classList.toggle('nav-visible', window.scrollY > 100);
+                nav.classList.toggle('nav-hidden', window.scrollY <= 100);
+            });
+        });
+    </script>
+</body>
+</html>
